@@ -2,6 +2,7 @@
 #include "core/core_bind.h"
 #include "core/os/os.h"
 #include "editor/project_settings_editor.h"
+#include <stdlib.h>
 
 Array fast_parse_row(sqlite3_stmt *stmt) {
   Array result;
