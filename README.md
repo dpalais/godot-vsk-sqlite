@@ -1,5 +1,7 @@
 # godot-sqlite
 
+More active implementation at [godot-libsql](https://github.com/V-Sekai/godot-libsql)
+
 [SQLite3](https://www.sqlite.org/) wrapper for Godot Engine
 
 ## Git Installation
