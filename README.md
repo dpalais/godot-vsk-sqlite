@@ -1,30 +1,27 @@
-# godot-sqlite
+# Godot SQLite
 
-More active implementation at [godot-libsql](https://github.com/V-Sekai/godot-libsql)
+This is a [SQLite3](https://www.sqlite.org/) wrapper for the Godot Engine.
 
-[SQLite3](https://www.sqlite.org/) wrapper for Godot Engine
+## Installation
 
-## Git Installation
+1. Clone the repository using git:
 
-Download using git.
+   ```
+   git clone https://github.com/V-Sekai/godot-sqlite sqlite
+   ```
 
-```
-git clone https://github.com/V-Sekai/godot-sqlite sqlite
-```
+2. Move the `sqlite` folder to the `modules` folder inside the Godot Engine source:
 
-Move to the modules folder inside of the Godot Engine source.
+   ```
+   mv sqlite godot/modules/
+   ```
 
-```
-mv sqlite godot/modules/
-```
+## Example Usage
 
-## Example usage
+- [SQL Queries](https://github.com/V-Sekai/godot-sqlite/blob/master/demo/SQLite/sql_queries.gd)
+- [Game Highscore](https://github.com/V-Sekai/godot-sqlite/blob/master/demo/SQLite/game_highscore.gd)
+- [Item Libraries](https://github.com/V-Sekai/godot-sqlite/blob/master/demo/SQLite/item_database.gd)
 
-- [SQL Queries](https://github.com/godot-extended-libraries/godot-sqlite/blob/master/demo/SQLite/sql_queries.gd)
-- [Game Highscore](https://github.com/godot-extended-libraries/godot-sqlite/blob/master/demo/SQLite/game_highscore.gd)
-- [Item Libraries](https://github.com/godot-extended-libraries/godot-sqlite/blob/master/demo/SQLite/item_database.gd)
+## Credits
 
-## Attribution
-
-This engine module for Godot is based on gdsqlite-native by Khairul Hidayat in 2017.
-
+This engine module for Godot is based on `gdsqlite-native` by Khairul Hidayat in 2017.
