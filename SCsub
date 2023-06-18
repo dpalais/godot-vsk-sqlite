@@ -20,6 +20,12 @@ env.Append(LIBPATH=["thirdparty/spmemvfs", "thirdparty/sqlite"])
 if sys.platform == "darwin":
     env.Append(LIBPATH=["/usr/local/opt/openssl@1.1/lib"])
     env.Append(LIBS=["ssl", "crypto"])
+    print(
+        "Please download and install the FoundationDB package for macOS from the following link:"
+    )
+    print(
+        "https://github.com/apple/foundationdb/releases/download/7.2.9/FoundationDB-7.2.9_arm64.pkg"
+    )
     print("Install pkgsrc")
     print("sudo pkgin -y upgrade")
     print("sudo pkgin search foundationdb")
