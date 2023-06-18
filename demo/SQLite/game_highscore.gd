@@ -1,10 +1,11 @@
 extends Node
 
 # Variables
-var db
-var highscore = 0
-var row_id = 0
-@onready var open = false
+var db;
+var highscore = 0;
+var row_id = 0;
+@onready
+var open = false;
 
 
 func _ready():
@@ -23,12 +24,10 @@ func _ready():
 		return
 
 	# Retrieve current highscore
-	query = db.create_query("SELECT id, score FROM highscore LIMIT 1;")
-	var rows = query.execute()
-	var columns = query.get_columns()
-	if not rows.is_empty():
-		row_id = rows[0][columns.find("id")]
-		highscore = rows[0][columns.find("score")]
+	var rows = db.fetch_array("SELECT id, score FROM highscore LIMIT 1;");
+	if (rows and not rows.is_empty()):
+		row_id = rows[0]['id'];
+		highscore = rows[0]['score'];
 
 	# Test
 	set_highscore(1000)
@@ -65,11 +64,9 @@ func get_highscore():
 		return
 
 	# Retrieve highscore from database
-	var retrieve_highscore : SQLiteQuery = db.create_query("SELECT score FROM highscore WHERE id=? LIMIT 1;")
-	var rows = retrieve_highscore.execute([row_id])
-	var columns : Array = retrieve_highscore.get_columns()
-	if not rows.is_empty():
-		highscore = rows[0][columns.find("score")]
+	var rows = db.fetch_array_with_args("SELECT score FROM highscore WHERE id=? LIMIT 1;", [row_id]);
+	if (rows and not rows.is_empty()):
+		highscore = rows[0]['score'];
 
 	# Return the highscore
 	return highscore

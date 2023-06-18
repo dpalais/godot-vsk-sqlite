@@ -25,7 +25,7 @@ func _ready():
 	query = "SELECT * FROM users;"
 	result = db.create_query(query).execute()
 
-	if result.is_empty():
+	if (result == null || result.size() <= 0):
 		# Insert new row
 		query = "INSERT INTO users (first_name, last_name, email) VALUES ('godot', 'engine', 'user@users.org');"
 		result = db.create_query(query).execute()

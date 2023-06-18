@@ -14,12 +14,11 @@ func _ready() -> void:
 		print("Failed opening database.")
 		return
 
-	var get_item_list : SQLiteQuery = db.create_query("SELECT * FROM potion ORDER BY id ASC")
-	var pots = get_item_list.execute([])
-	if pots.is_empty():
-		return
-	
-	var columns = get_item_list.get_columns()
+	# Get item list from db
+	var pots = db.fetch_array("SELECT * FROM potion ORDER BY id ASC");
+	if (pots == null or pots.is_empty()):
+		return;
+
 	for pot in pots:
 		# Create new item from database
 		var item = {
@@ -37,12 +36,12 @@ func _ready() -> void:
 func open_database(db: SQLite, path: String) -> bool:
 	if path.begins_with("res://"):
 		# Open packed database
-		var file = FileAccess.open(path, FileAccess.READ)
-		if not file:
-			return false
-		var size = file.get_length()
-		var buffers = file.get_buffer(size)
-		return db.open_buffered(path, buffers, size)
+		var file = FileAccess.open(path, FileAccess.READ);
+		if file == null:
+			return false;
+		var size = file.get_length();
+		var buffers = file.get_buffer(size);
+		return db.open_buffered(path, buffers, size);
 
 	# Open database normally
 	return db.open(path)
