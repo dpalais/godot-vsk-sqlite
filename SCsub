@@ -7,9 +7,6 @@ Import("env_modules")
 
 # Clone the environment and add CPP defines
 module_env = env.Clone()
-# Set the script directory and change the working directory to it
-script_dir = os.path.abspath(".")
-os.chdir(script_dir)
 
 # Add include paths and library paths for the module
 env.Append(CPPPATH=["."])
