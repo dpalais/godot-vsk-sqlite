@@ -1,26 +1,18 @@
 #include "core/core_bind.h"
 #include "core/os/os.h"
-#include "editor/project_settings_editor.h"
 #include "thirdparty/sqlite/sqlite3.h"
 
 #include "godot_sqlite.h"
 
-#define _GNU_SOURCE
-
 Array fast_parse_row(sqlite3_stmt *stmt) {
 	Array result;
 
-	// Get column count
-	const int col_count = sqlite3_column_count(stmt);
+	const int column_count = sqlite3_column_count(stmt);
 
-	// Fetch all column
-	for (int i = 0; i < col_count; i++) {
-		// Value
-		const int col_type = sqlite3_column_type(stmt, i);
+	for (int i = 0; i < column_count; i++) {
+		const int column_type = sqlite3_column_type(stmt, i);
 		Variant value;
-
-		// Get column value
-		switch (col_type) {
+		switch (column_type) {
 			case SQLITE_INTEGER:
 				value = Variant(sqlite3_column_int(stmt, i));
 				break;
@@ -45,10 +37,10 @@ Array fast_parse_row(sqlite3_stmt *stmt) {
 				break;
 			}
 			case SQLITE_NULL: {
-				// Nothing to do.
+				[[fallthrough]]
 			} break;
 			default:
-				ERR_PRINT("This kind of data is not yet supported: " + itos(col_type));
+				ERR_PRINT("This kind of data is not yet supported: " + itos(column_type));
 				break;
 		}
 
@@ -178,7 +170,7 @@ sqlite3_stmt *SQLite::prepare(const char *query) {
 	sqlite3 *dbs = get_handler();
 
 	ERR_FAIL_COND_V_MSG(dbs == nullptr, nullptr,
-			"Cannot prepare query! Database is not opened.");
+			"Cannot prepare query. The database was not opened.");
 
 	// Prepare the statement
 	sqlite3_stmt *stmt = nullptr;
@@ -255,9 +247,7 @@ String SQLite::get_last_error_message() const {
 }
 
 SQLite::~SQLite() {
-	// Close database
 	close();
-	// Make sure to invalidate all associated queries.
 	for (uint32_t i = 0; i < queries.size(); i += 1) {
 		SQLiteQuery *query = Object::cast_to<SQLiteQuery>(queries[i]->get_ref());
 		if (query != nullptr) {
