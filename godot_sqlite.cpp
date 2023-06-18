@@ -37,7 +37,6 @@ Array fast_parse_row(sqlite3_stmt *stmt) {
 				break;
 			}
 			case SQLITE_NULL: {
-				[[fallthrough]]
 			} break;
 			default:
 				ERR_PRINT("This kind of data is not yet supported: " + itos(column_type));
