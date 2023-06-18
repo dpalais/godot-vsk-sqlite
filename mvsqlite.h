@@ -22,7 +22,7 @@ extern "C" {
 typedef int (*sqlite3_initialize_fn)(void);
 typedef int (*sqlite3_open_v2_fn)(
     const char *filename,   /* Database filename (UTF-8) */
-    sqlite3 **ppDb,            /* OUT: MVSQLite db handle */
+    sqlite3 **ppDb,            /* OUT: SQLite db handle */
     int flags,              /* Flags */
     const char *zVfs        /* Name of VFS module to use */
 );
@@ -32,22 +32,22 @@ int sqlite3_step(sqlite3_stmt *pStmt);
 
 int sqlite3_open_v2(
     const char *filename,   /* Database filename (UTF-8) */
-    sqlite3 **ppDb,            /* OUT: MVSQLite db handle */
+    sqlite3 **ppDb,            /* OUT: SQLite db handle */
     int flags,              /* Flags */
     const char *zVfs        /* Name of VFS module to use */
 );
 
 int sqlite3_open(
     const char *filename,   /* Database filename (UTF-8) */
-    sqlite3 **ppDb          /* OUT: MVSQLite db handle */
+    sqlite3 **ppDb          /* OUT: SQLite db handle */
 );
 
-class MVSQLite;
+class SQLite;
 
-class MVSQLiteQuery : public RefCounted {
-  GDCLASS(MVSQLiteQuery, RefCounted);
+class SQLiteQuery : public RefCounted {
+  GDCLASS(SQLiteQuery, RefCounted);
 
-  MVSQLite *db = nullptr;
+  SQLite *db = nullptr;
   sqlite3_stmt *stmt = nullptr;
   String query;
 
@@ -55,10 +55,10 @@ protected:
   static void _bind_methods();
 
 public:
-  MVSQLiteQuery();
-  ~MVSQLiteQuery();
+  SQLiteQuery();
+  ~SQLiteQuery();
 
-  void init(MVSQLite *p_db, const String &p_query);
+  void init(SQLite *p_db, const String &p_query);
 
   bool is_ready() const;
 
@@ -107,10 +107,10 @@ private:
   bool prepare();
 };
 
-class MVSQLite : public RefCounted {
-  GDCLASS(MVSQLite, RefCounted);
+class SQLite : public RefCounted {
+  GDCLASS(SQLite, RefCounted);
 
-  friend class MVSQLiteQuery;
+  friend class SQLiteQuery;
 
 private:
   // sqlite handler
@@ -136,8 +136,8 @@ protected:
 public:
   enum { RESULT_BOTH = 0, RESULT_NUM, RESULT_ASSOC };
 
-  MVSQLite();
-  ~MVSQLite();
+  SQLite();
+  ~SQLite();
 
   // methods
   bool open(String path);
@@ -149,7 +149,7 @@ public:
   /// execution.
   /// Note: you can create the query at any time, but you can execute it only
   /// when the DB is open.
-  Ref<MVSQLiteQuery> create_query(String p_query);
+  Ref<SQLiteQuery> create_query(String p_query);
 
   String get_last_error_message() const;
 };

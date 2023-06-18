@@ -2,7 +2,7 @@ extends Node3D
 
 
 func _ready():
-	var db : MVSQLite = MVSQLite.new();
+	var db : SQLite = SQLite.new();
 	if (!db.open("mvsqlite")):
 		print("Failed opening database.");
 		return;

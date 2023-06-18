@@ -1,12 +1,12 @@
 extends Node3D
 
-var db : MVSQLite = null
-var result_create : MVSQLiteQuery
-var result_delete : MVSQLiteQuery
+var db : SQLite = null
+var result_create : SQLiteQuery
+var result_delete : SQLiteQuery
 var uuid : String 
 
 func _ready():
-	db = MVSQLite.new();
+	db = SQLite.new();
 	if (!db.open("mvsqlite")):
 		print("Failed opening database.");
 		return;
