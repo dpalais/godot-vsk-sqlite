@@ -380,4 +380,6 @@ snow.png
 updown.png
 gcov.css
 
-demo/.godot/
+.sconsign.dblite
+.vscode
+*.obj

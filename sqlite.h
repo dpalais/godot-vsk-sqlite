@@ -78,6 +78,12 @@ class SQLite : public RefCounted {
   GDCLASS(SQLite, RefCounted);
 
   friend class SQLiteQuery;
+	sqlite3_stmt *prepare(const char *statement);
+	Array fetch_rows(String query, Array args, int result_type = RESULT_BOTH);
+	Dictionary parse_row(sqlite3_stmt *stmt, int result_type);
+	sqlite3 *get_handler() { return (memory_read ? p_db.handle : db); }
+	bool bind_args(sqlite3_stmt *stmt, Array args);
+	bool open_torrent(String link, String p_path, PoolByteArray buffers, int64_t size);
 
 private:
   // sqlite handler
