@@ -1,7 +1,7 @@
 #include "register_types.h"
 
 #include "core/object/class_db.h"
-#include "mvsqlite.h"
+#include "godot_sqlite.h"
 
 void initialize_sqlite_module(ModuleInitializationLevel p_level) {
   if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
@@ -12,7 +12,4 @@ void initialize_sqlite_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_sqlite_module(ModuleInitializationLevel p_level) {
-  if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-    return;
-  }
 }
