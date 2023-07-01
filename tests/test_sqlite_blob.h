@@ -31,9 +31,9 @@
 #ifndef TEST_SQLITE_BLOB_H
 #define TEST_SQLITE_BLOB_H
 
+#include "core/io/marshalls.h"
 #include "core/variant/variant.h"
 #include "tests/test_macros.h"
-#include "core/io/marshalls.h"
 
 #include "../godot_sqlite.h"
 
