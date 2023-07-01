@@ -33,11 +33,30 @@
 
 #include "core/variant/variant.h"
 #include "tests/test_macros.h"
+#include "core/io/marshalls.h"
 
 #include "../godot_sqlite.h"
 
 struct VariantUtilityFunctions {
-	static inline PackedByteArray var_to_bytes(const Variant &p_var);
+	static inline PackedByteArray var_to_bytes(const Variant &p_var) {
+		int len;
+		Error err = encode_variant(p_var, nullptr, len, false);
+		if (err != OK) {
+			return PackedByteArray();
+		}
+
+		PackedByteArray barr;
+		barr.resize(len);
+		{
+			uint8_t *w = barr.ptrw();
+			err = encode_variant(p_var, w, len, false);
+			if (err != OK) {
+				return PackedByteArray();
+			}
+		}
+
+		return barr;
+	}
 };
 
 namespace TestSqliteBlob {
