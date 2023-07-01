@@ -1,5 +1,38 @@
+/**************************************************************************/
+/*  godot_sqlite.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#include "core/config/project_settings.h"
 #include "core/core_bind.h"
+#include "core/error/error_macros.h"
 #include "core/os/os.h"
+#include "core/variant/variant.h"
 #include "thirdparty/sqlite/sqlite3.h"
 
 #include "godot_sqlite.h"
@@ -122,12 +155,10 @@ void SQLiteQuery::_bind_methods() {
 }
 
 SQLite::SQLite() {
-	db = nullptr;
-	memory_read = false;
 }
 
 bool SQLite::open_in_memory() {
-	int result = sqlite3_open_v2(":memory:", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+	int result = sqlite3_open_v2(":memory:", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
 	ERR_FAIL_COND_V_MSG(result != SQLITE_OK, false,
 			"Cannot open database in memory, error:" + itos(result));
 	return true;
@@ -158,7 +189,7 @@ void SQLite::close() {
 
 	if (memory_read) {
 		// Close virtual filesystem database
-		spmemvfs_close_db(&p_db);
+		spmemvfs_close_db(&spmemvfs_db);
 		spmemvfs_env_fini();
 		memory_read = false;
 	}
@@ -256,7 +287,7 @@ SQLite::~SQLite() {
 }
 
 void SQLite::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open", "path"), &SQLite::open);
+	ClassDB::bind_method(D_METHOD("open"), &SQLite::open);
 	ClassDB::bind_method(D_METHOD("open_in_memory"), &SQLite::open_in_memory);
 	ClassDB::bind_method(D_METHOD("open_buffered", "path", "buffers", "size"),
 			&SQLite::open_buffered);
@@ -265,4 +296,181 @@ void SQLite::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_query", "statement"),
 			&SQLite::create_query);
+}
+
+bool SQLite::open(const String &path) {
+	if (!path.strip_edges().length()) {
+		return false;
+	}
+
+	if (!Engine::get_singleton()->is_editor_hint() &&
+			path.begins_with("res://")) {
+		Ref<FileAccess> dbfile = FileAccess::open(path, FileAccess::READ);
+		if (dbfile.is_null()) {
+			print_error("Cannot open packed database!");
+			return false;
+		}
+		int64_t size = dbfile->get_length();
+		PackedByteArray buffer;
+		buffer.resize(size);
+		buffer.fill(0);
+		dbfile->get_buffer(buffer.ptrw(), size);
+		return open_buffered(path, buffer, size);
+	}
+
+	String real_path = ProjectSettings::get_singleton()->globalize_path(path.strip_edges());
+
+	int result = sqlite3_open(real_path.utf8().get_data(), &db);
+
+	if (result != SQLITE_OK) {
+		print_error("Cannot open database!");
+		return false;
+	}
+
+	return true;
+}
+
+bool SQLite::bind_args(sqlite3_stmt *stmt, const Array &args) {
+	int param_count = sqlite3_bind_parameter_count(stmt);
+	if (param_count != args.size()) {
+		print_error("SQLiteQuery failed; expected " + itos(param_count) +
+				" arguments, got " + itos(args.size()));
+		return false;
+	}
+
+	/**
+	 * SQLite data types:
+	 * - NULL
+	 * - INTEGER (signed, max 8 bytes)
+	 * - REAL (stored as a double-precision float)
+	 * - TEXT (stored in database encoding of UTF-8, UTF-16BE or UTF-16LE)
+	 * - BLOB (1:1 storage)
+	 */
+
+	for (int i = 0; i < param_count; i++) {
+		int retcode;
+		switch (args[i].get_type()) {
+			case Variant::Type::NIL:
+				retcode = sqlite3_bind_null(stmt, i + 1);
+				break;
+			case Variant::Type::BOOL:
+			case Variant::Type::INT:
+				retcode = sqlite3_bind_int(stmt, i + 1, (int)args[i]);
+				break;
+			case Variant::Type::FLOAT:
+				retcode = sqlite3_bind_double(stmt, i + 1, (double)args[i]);
+				break;
+			case Variant::Type::STRING:
+				retcode = sqlite3_bind_text(
+						stmt, i + 1, String(args[i]).utf8().get_data(), -1, SQLITE_TRANSIENT);
+				break;
+			case Variant::Type::PACKED_BYTE_ARRAY:
+				retcode =
+						sqlite3_bind_blob(stmt, i + 1, PackedByteArray(args[i]).ptr(),
+								PackedByteArray(args[i]).size(), SQLITE_TRANSIENT);
+				break;
+			default:
+				print_error(
+						"SQLite was passed unhandled Variant with TYPE_* enum " +
+						itos(args[i].get_type()) +
+						". Please serialize your object into a String or a PoolByteArray.\n");
+				return false;
+		}
+
+		if (retcode != SQLITE_OK) {
+			print_error(
+					"SQLiteQuery failed, an error occured while binding argument" +
+					itos(i + 1) + " of " + itos(args.size()) + " (SQLite errcode " +
+					itos(retcode) + ")");
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool SQLite::open_buffered(const String &name, const PackedByteArray &buffers, int64_t size) {
+	if (!name.strip_edges().length()) {
+		return false;
+	}
+
+	if (!buffers.size() || !size) {
+		return false;
+	}
+
+	spmembuffer_t *p_mem = (spmembuffer_t *)calloc(1, sizeof(spmembuffer_t));
+	p_mem->total = p_mem->used = size;
+	p_mem->data = (char *)malloc(size + 1);
+	memcpy(p_mem->data, buffers.ptr(), size);
+	p_mem->data[size] = '\0';
+
+	spmemvfs_env_init();
+	int err = spmemvfs_open_db(&spmemvfs_db, name.utf8().get_data(), p_mem);
+
+	if (err != SQLITE_OK || spmemvfs_db.mem != p_mem) {
+		print_error("Cannot open buffered database!");
+		return false;
+	}
+
+	memory_read = true;
+	return true;
+}
+
+Variant SQLiteQuery::execute(const Array p_args) {
+	if (is_ready() == false) {
+		ERR_FAIL_COND_V(prepare() == false, Variant());
+	}
+
+	ERR_FAIL_NULL_V(stmt, Variant());
+
+	if (!SQLite::bind_args(stmt, p_args)) {
+		ERR_FAIL_V_MSG(Variant(),
+				"Error during arguments set: " + get_last_error_message());
+	}
+
+	Array result;
+	while (true) {
+		const int res = sqlite3_step(stmt);
+		if (res == SQLITE_ROW) {
+			result.append(fast_parse_row(stmt));
+		} else if (res == SQLITE_DONE) {
+			break;
+		} else {
+			ERR_BREAK_MSG(true, "There was an error during an SQL execution: " + get_last_error_message());
+		}
+	}
+
+	if (SQLITE_OK != sqlite3_reset(stmt)) {
+		finalize();
+		ERR_FAIL_V_MSG(result, "Was not possible to reset the query: " + get_last_error_message());
+	}
+
+	return result;
+}
+
+Variant SQLiteQuery::batch_execute(Array p_rows) {
+	Array res;
+	for (int i = 0; i < p_rows.size(); i += 1) {
+		ERR_FAIL_COND_V_MSG(p_rows[i].get_type() != Variant::ARRAY, Variant(),
+				"An Array of Array is exepected.");
+		Variant r = execute(p_rows[i]);
+		if (unlikely(r.get_type() == Variant::NIL)) {
+			// An error occurred, the error is already logged.
+			return Variant();
+		}
+		res.push_back(r);
+	}
+	return res;
+}
+
+Ref<SQLiteQuery> SQLite::create_query(String p_query) {
+	Ref<SQLiteQuery> query;
+	query.instantiate();
+	query->init(this, p_query);
+
+	WeakRef *wr = memnew(WeakRef);
+	wr->set_obj(query.ptr());
+	queries.push_back(wr);
+
+	return query;
 }

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.h                                                      */
+/*  test_sqlite_sqlquery.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,12 +28,77 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SQLITE_REGISTER_TYPES_H
-#define SQLITE_REGISTER_TYPES_H
+#ifndef TEST_SQLITE_H
+#define TEST_SQLITE_H
 
-#include "modules/register_module_types.h"
+#include "core/variant/variant.h"
+#include "tests/test_macros.h"
 
-void initialize_sqlite_module(ModuleInitializationLevel p_level);
-void uninitialize_sqlite_module(ModuleInitializationLevel p_level);
+#include "../godot_sqlite.h"
 
-#endif // SQLITE_REGISTER_TYPES_H
+namespace TestSqlite {
+
+Ref<SQLite> db;
+
+void setup() {
+	db = Ref<SQLite>(memnew(SQLite));
+}
+
+void teardown() {
+	db->close();
+}
+
+TEST_CASE("[Modules][SQLite] handle invalid queries") {
+	setup();
+
+	CHECK(db->open_in_memory());
+
+	String query = "INVALID SQL QUERY;";
+	Ref<SQLiteQuery> result = db->create_query(query);
+	CHECK(result->execute(Array()) == Variant());
+
+	teardown();
+}
+
+TEST_CASE("[Modules][SQLite] check if database can be open twice") {
+	setup();
+
+	CHECK(db->open("user://godot_test_already_open.sqlite"));
+	CHECK(db->open("user://godot_test_already_open.sqlite"));
+
+	teardown();
+}
+
+TEST_CASE("[Modules][SQLite] database operations") {
+	setup();
+
+	CHECK(db->open_in_memory());
+
+	String query = "CREATE TABLE IF NOT EXISTS users ("
+				   "id integer PRIMARY KEY,"
+				   "first_name text NOT NULL,"
+				   "last_name text NOT NULL,"
+				   "email text NOT NULL"
+				   ");";
+	Ref<SQLiteQuery> result = db->create_query(query);
+	CHECK(result->execute(Array()) == Array());
+
+	query = "SELECT * FROM users;";
+	result = db->create_query(query);
+	Array rows = result->execute(Array());
+
+	if (rows.is_empty()) {
+		query = "INSERT INTO users (first_name, last_name, email) VALUES ('godot', 'engine', 'user@users.org');";
+		result = db->create_query(query);
+		CHECK(result->execute(Array()) == Array());
+	} else {
+		for (int i = 0; i < rows.size(); ++i) {
+			CHECK(rows[i] != Variant());
+		}
+	}
+
+	teardown();
+}
+} //namespace TestSqlite
+
+#endif // TEST_SQLITE_H

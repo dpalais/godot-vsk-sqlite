@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.h                                                      */
+/*  test_sqlite_item_database.h                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,12 +28,89 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SQLITE_REGISTER_TYPES_H
-#define SQLITE_REGISTER_TYPES_H
+#ifndef TEST_SQLITE_ITEM_H
+#define TEST_SQLITE_ITEM_H
 
-#include "modules/register_module_types.h"
+#include "core/variant/variant.h"
+#include "tests/test_macros.h"
 
-void initialize_sqlite_module(ModuleInitializationLevel p_level);
-void uninitialize_sqlite_module(ModuleInitializationLevel p_level);
+#include "../godot_sqlite.h"
 
-#endif // SQLITE_REGISTER_TYPES_H
+namespace TestSqliteItem {
+
+Ref<SQLite> db;
+
+void setup() {
+	db = Ref<SQLite>(memnew(SQLite));
+	CHECK(db->open_in_memory());
+}
+
+void teardown() {
+	db->close();
+}
+
+void create_table() {
+	String query = "CREATE TABLE IF NOT EXISTS potion ("
+				   "id integer PRIMARY KEY,"
+				   "name text NOT NULL,"
+				   "price integer NOT NULL,"
+				   "heals integer NOT NULL"
+				   ");";
+	Ref<SQLiteQuery> result = db->create_query(query);
+	result->execute(Array());
+}
+
+TEST_CASE("[Modules][SQLite] open database") {
+	setup();
+
+	CHECK_FALSE(db->open("res://non_existent.db"));
+
+	teardown();
+}
+
+TEST_CASE("[Modules][SQLite] fetch data from potion table") {
+	setup();
+	create_table();
+
+	String query = "INSERT INTO potion (id, name, price, heals) VALUES (1, 'test_potion', 100, 50);";
+	Ref<SQLiteQuery> result = db->create_query(query);
+	result->execute(Array());
+
+	query = "SELECT * FROM potion ORDER BY id ASC;";
+	result = db->create_query(query);
+	Array rows = result->execute(Array());
+	CHECK_FALSE(rows.is_empty());
+
+	teardown();
+}
+
+TEST_CASE("[Modules][SQLite] fetch data from non-existent table") {
+	setup();
+
+	String query = "SELECT * FROM non_existent_table;";
+	Ref<SQLiteQuery> result = db->create_query(query);
+	Array rows = result->execute(Array());
+	CHECK(rows.is_empty());
+
+	teardown();
+}
+
+TEST_CASE("[Modules][SQLite] create and retrieve item") {
+	setup();
+	create_table();
+
+	String query = "INSERT INTO potion (id, name, price, heals) VALUES (999, 'test_potion', 100, 50);";
+	Ref<SQLiteQuery> result = db->create_query(query);
+	CHECK(result->execute(Array()) == Array());
+
+	query = "SELECT * FROM potion WHERE id=999;";
+	result = db->create_query(query);
+	Array rows = result->execute(Array());
+	CHECK(rows.size() == 1);
+
+	teardown();
+}
+
+} //namespace TestSqliteItem
+
+#endif // TEST_SQLITE_ITEM_H

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.h                                                      */
+/*  test_sqlite_blob.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,12 +28,83 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SQLITE_REGISTER_TYPES_H
-#define SQLITE_REGISTER_TYPES_H
+#ifndef TEST_SQLITE_BLOB_H
+#define TEST_SQLITE_BLOB_H
 
-#include "modules/register_module_types.h"
+#include "core/variant/variant.h"
+#include "tests/test_macros.h"
 
-void initialize_sqlite_module(ModuleInitializationLevel p_level);
-void uninitialize_sqlite_module(ModuleInitializationLevel p_level);
+#include "../godot_sqlite.h"
 
-#endif // SQLITE_REGISTER_TYPES_H
+struct VariantUtilityFunctions {
+	static inline PackedByteArray var_to_bytes(const Variant &p_var);
+};
+
+namespace TestSqliteBlob {
+
+Ref<SQLite> db;
+String db_path = "user://bytes_db.sqlite";
+
+void setup() {
+	db = Ref<SQLite>(memnew(SQLite));
+	CHECK(db->open_in_memory());
+}
+
+void teardown() {
+	db->close();
+}
+
+void create_table() {
+	String query = "CREATE TABLE IF NOT EXISTS byte_data ("
+				   "id integer PRIMARY KEY,"
+				   "dict BLOB NOT NULL"
+				   ");";
+	Ref<SQLiteQuery> result = db->create_query(query);
+	result->execute(Array());
+}
+
+TEST_CASE("[Modules][SQLite] open database") {
+	setup();
+
+	CHECK_FALSE(db->open("res://non_existent.db"));
+
+	teardown();
+}
+
+TEST_CASE("[Modules][SQLite] fetch data from byte_data table") {
+	setup();
+	create_table();
+
+	Dictionary data;
+	data["time_created"] = Time::get_singleton()->get_datetime_dict_from_system(true);
+	PackedByteArray bytes = VariantUtilityFunctions::var_to_bytes(data);
+
+	String query = "INSERT INTO byte_data VALUES (?, ?);";
+	Array args;
+	args.push_back(1);
+	args.push_back(bytes);
+	Ref<SQLiteQuery> result = db->create_query(query);
+	result->execute(args);
+
+	query = "SELECT dict FROM byte_data WHERE id=1 LIMIT 1;";
+	result = db->create_query(query);
+	Array rows = result->execute(Array());
+	CHECK_FALSE(rows.is_empty());
+
+	teardown();
+}
+
+TEST_CASE("[Modules][SQLite] fetch data from non-existent table") {
+	setup();
+
+	String query = "SELECT * FROM non_existent_table;";
+	Ref<SQLiteQuery> result = db->create_query(query);
+	Array rows = result->execute(Array());
+	CHECK(rows.is_empty());
+
+	teardown();
+}
+
+} //namespace TestSqliteBlob
+
+#endif // TEST_SQLITE_BLOB_H
