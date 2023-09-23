@@ -7,40 +7,10 @@ Import("env_modules")
 
 # Clone the environment and add CPP defines
 module_env = env.Clone()
-# Set the script directory and change the working directory to it
-script_dir = os.path.abspath(".")
-os.chdir(script_dir)
 
 # Add include paths and library paths for the module
 env.Append(CPPPATH=["."])
 env.Append(LIBPATH=["thirdparty/spmemvfs", "thirdparty/sqlite"])
-
-
-# Platform-specific library paths and libraries
-if sys.platform == "darwin":
-    env.Append(LIBPATH=["/usr/local/opt/openssl@1.1/lib"])
-    env.Append(LIBS=["ssl", "crypto"])
-    print(
-        "Please download and install the FoundationDB package for macOS from the following link:"
-    )
-    print(
-        "https://github.com/apple/foundationdb/releases/download/7.2.9/FoundationDB-7.2.9_arm64.pkg"
-    )
-    print("Install pkgsrc")
-    print("sudo pkgin -y upgrade")
-    print("sudo pkgin search foundationdb")
-    print("sudo pkgin install foundationdb")
-elif sys.platform == "win32":
-    env.Append(
-        LIBPATH=[
-            "C:/Users/ernes/Downloads/epsilon/modules/mvsqlite/thirdparty/mvsqlite/target/release",
-            "C:/Users/ernes/scoop/apps/openssl-mingw/current/lib64",
-        ]
-    )
-    env.Append(LIBS=["ssl", "crypto", "ws2_32", "bcrypt", "userenv", "ntdll"])
-
-# Add the mvsqlite library
-env.Append(LIBS=["mvsqlite"])
 
 module_env.Append(CPPDEFINES=[("SQLITE_ENABLE_RBU", 1), ("SQLITE_USE_URI", 1), "SQLITE_ENABLE_JSON1"])
 
@@ -52,14 +22,3 @@ env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(env.modules_sources, "thirdparty/sqlite/*.c")
 env_thirdparty.add_source_files(env.modules_sources, "thirdparty/spmemvfs/*.c")
 module_env.add_source_files(env.modules_sources, "*.cpp")
-
-# Automatically build Rust project using Cargo
-rust_project_path = "thirdparty/mvsqlite"
-cargo_build_command = ["cargo", "build", "--release"]
-
-# Try to build the Rust project and handle errors
-try:
-    subprocess.check_call(cargo_build_command, cwd=rust_project_path)
-except subprocess.CalledProcessError as e:
-    print(f"Error building Rust project: {e}")
-    sys.exit(1)
