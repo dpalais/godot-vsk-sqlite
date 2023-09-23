@@ -8,6 +8,9 @@
 
 [node name="Node" type="Node"]
 
+[node name="TestDatabase" type="Node2D" parent="."]
+script = ExtResource("5_l7232")
+
 [node name="ItemDatabase" type="Node2D" parent="."]
 script = ExtResource("1")
 
