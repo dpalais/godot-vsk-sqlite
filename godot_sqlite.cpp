@@ -82,24 +82,24 @@ Array fast_parse_row(sqlite3_stmt *stmt) {
 	return result;
 }
 
-SQLiteQuery::SQLiteQuery() {}
+MVSQLiteQuery::MVSQLiteQuery() {}
 
-SQLiteQuery::~SQLiteQuery() { finalize(); }
+MVSQLiteQuery::~MVSQLiteQuery() { finalize(); }
 
-void SQLiteQuery::init(SQLite *p_db, const String &p_query) {
+void MVSQLiteQuery::init(MVSQLite *p_db, const String &p_query) {
 	db = p_db;
 	query = p_query;
 	stmt = nullptr;
 }
 
-bool SQLiteQuery::is_ready() const { return stmt != nullptr; }
+bool MVSQLiteQuery::is_ready() const { return stmt != nullptr; }
 
-String SQLiteQuery::get_last_error_message() const {
+String MVSQLiteQuery::get_last_error_message() const {
 	ERR_FAIL_COND_V(db == nullptr, "Database is undefined.");
 	return db->get_last_error_message();
 }
 
-Array SQLiteQuery::get_columns() {
+Array MVSQLiteQuery::get_columns() {
 	if (is_ready() == false) {
 		ERR_FAIL_COND_V(prepare() == false, Array());
 	}
@@ -121,7 +121,7 @@ Array SQLiteQuery::get_columns() {
 	return res;
 }
 
-bool SQLiteQuery::prepare() {
+bool MVSQLiteQuery::prepare() {
 	ERR_FAIL_COND_V(stmt != nullptr, false);
 	ERR_FAIL_COND_V(db == nullptr, false);
 	ERR_FAIL_COND_V(query == "", false);
@@ -137,14 +137,14 @@ bool SQLiteQuery::prepare() {
 	return true;
 }
 
-void SQLiteQuery::finalize() {
+void MVSQLiteQuery::finalize() {
 	if (stmt) {
 		sqlite3_finalize(stmt);
 		stmt = nullptr;
 	}
 }
 
-void SQLiteQuery::_bind_methods() {
+void MVSQLiteQuery::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_last_error_message"),
 			&SQLiteQuery::get_last_error_message);
 	ClassDB::bind_method(D_METHOD("execute", "arguments"), &SQLiteQuery::execute,
@@ -154,21 +154,21 @@ void SQLiteQuery::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_columns"), &SQLiteQuery::get_columns);
 }
 
-SQLite::SQLite() {
+MVSQLite::MVSQLite() {
 }
 
-bool SQLite::open_in_memory() {
+bool MVSQLite::open_in_memory() {
 	int result = sqlite3_open_v2(":memory:", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nullptr);
 	ERR_FAIL_COND_V_MSG(result != SQLITE_OK, false,
 			"Cannot open database in memory, error:" + itos(result));
 	return true;
 }
 
-void SQLite::close() {
+void MVSQLite::close() {
 	// Finalize all queries before close the DB.
 	// Reverse order because I need to remove the not available queries.
 	for (uint32_t i = queries.size(); i > 0; i -= 1) {
-		SQLiteQuery *query =
+		MVSQLiteQuery *query =
 				Object::cast_to<SQLiteQuery>(queries[i - 1]->get_ref());
 		if (query != nullptr) {
 			query->finalize();
@@ -195,7 +195,7 @@ void SQLite::close() {
 	}
 }
 
-sqlite3_stmt *SQLite::prepare(const char *query) {
+sqlite3_stmt *MVSQLite::prepare(const char *query) {
 	// Get database pointer
 	sqlite3 *dbs = get_handler();
 
@@ -212,7 +212,7 @@ sqlite3_stmt *SQLite::prepare(const char *query) {
 	return stmt;
 }
 
-Dictionary SQLite::parse_row(sqlite3_stmt *stmt, int result_type) {
+Dictionary MVSQLite::parse_row(sqlite3_stmt *stmt, int result_type) {
 	Dictionary result;
 
 	// Get column count
@@ -272,11 +272,11 @@ Dictionary SQLite::parse_row(sqlite3_stmt *stmt, int result_type) {
 	return result;
 }
 
-String SQLite::get_last_error_message() const {
+String MVSQLite::get_last_error_message() const {
 	return sqlite3_errmsg(get_handler());
 }
 
-SQLite::~SQLite() {
+MVSQLite::~MVSQLite() {
 	close();
 	for (uint32_t i = 0; i < queries.size(); i += 1) {
 		SQLiteQuery *query = Object::cast_to<SQLiteQuery>(queries[i]->get_ref());
@@ -286,7 +286,7 @@ SQLite::~SQLite() {
 	}
 }
 
-void SQLite::_bind_methods() {
+void MVSQLite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open"), &SQLite::open);
 	ClassDB::bind_method(D_METHOD("open_in_memory"), &SQLite::open_in_memory);
 	ClassDB::bind_method(D_METHOD("open_buffered", "path", "buffers", "size"),
@@ -298,7 +298,7 @@ void SQLite::_bind_methods() {
 			&SQLite::create_query);
 }
 
-bool SQLite::open(const String &path) {
+bool MVSQLite::open(const String &path) {
 	if (!path.strip_edges().length()) {
 		return false;
 	}
@@ -330,7 +330,7 @@ bool SQLite::open(const String &path) {
 	return true;
 }
 
-bool SQLite::bind_args(sqlite3_stmt *stmt, const Array &args) {
+bool MVSQLite::bind_args(sqlite3_stmt *stmt, const Array &args) {
 	int param_count = sqlite3_bind_parameter_count(stmt);
 	if (param_count != args.size()) {
 		print_error("SQLiteQuery failed; expected " + itos(param_count) +
@@ -389,7 +389,7 @@ bool SQLite::bind_args(sqlite3_stmt *stmt, const Array &args) {
 	return true;
 }
 
-bool SQLite::open_buffered(const String &name, const PackedByteArray &buffers, int64_t size) {
+bool MVSQLite::open_buffered(const String &name, const PackedByteArray &buffers, int64_t size) {
 	if (!name.strip_edges().length()) {
 		return false;
 	}
@@ -416,7 +416,7 @@ bool SQLite::open_buffered(const String &name, const PackedByteArray &buffers, i
 	return true;
 }
 
-Variant SQLiteQuery::execute(const Array p_args) {
+Variant MVSQLiteQuery::execute(const Array p_args) {
 	if (is_ready() == false) {
 		ERR_FAIL_COND_V(prepare() == false, Variant());
 	}
@@ -448,7 +448,7 @@ Variant SQLiteQuery::execute(const Array p_args) {
 	return result;
 }
 
-Variant SQLiteQuery::batch_execute(Array p_rows) {
+Variant MVSQLiteQuery::batch_execute(Array p_rows) {
 	Array res;
 	for (int i = 0; i < p_rows.size(); i += 1) {
 		ERR_FAIL_COND_V_MSG(p_rows[i].get_type() != Variant::ARRAY, Variant(),
@@ -463,7 +463,7 @@ Variant SQLiteQuery::batch_execute(Array p_rows) {
 	return res;
 }
 
-Ref<SQLiteQuery> SQLite::create_query(String p_query) {
+Ref<SQLiteQuery> MVSQLite::create_query(String p_query) {
 	Ref<SQLiteQuery> query;
 	query.instantiate();
 	query->init(this, p_query);

@@ -38,12 +38,12 @@
 #include "thirdparty/spmemvfs/spmemvfs.h"
 #include "thirdparty/sqlite/sqlite3.h"
 
-class SQLite;
+class MVSQLite;
 
-class SQLiteQuery : public RefCounted {
+class MVSQLiteQuery : public RefCounted {
 	GDCLASS(SQLiteQuery, RefCounted);
 
-	SQLite *db = nullptr;
+	MVSQLite *db = nullptr;
 	sqlite3_stmt *stmt = nullptr;
 	String query;
 
@@ -51,9 +51,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	SQLiteQuery();
-	~SQLiteQuery();
-	void init(SQLite *p_db, const String &p_query);
+	MVSQLiteQuery();
+	~MVSQLiteQuery();
+	void init(MVSQLite *p_db, const String &p_query);
 	bool is_ready() const;
 	String get_last_error_message() const;
 	Array get_columns();
@@ -65,7 +65,7 @@ private:
 	bool prepare();
 };
 
-class SQLite : public RefCounted {
+class MVSQLite : public RefCounted {
 	GDCLASS(SQLite, RefCounted);
 
 	friend class SQLiteQuery;
@@ -93,8 +93,8 @@ public:
 		RESULT_NUM,
 		RESULT_ASSOC };
 
-	SQLite();
-	~SQLite();
+	MVSQLite();
+	~MVSQLite();
 
 	bool open(const String &path);
 	bool open_in_memory();

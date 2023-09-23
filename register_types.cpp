@@ -33,7 +33,7 @@
 #include "core/object/class_db.h"
 #include "godot_sqlite.h"
 
-void initialize_sqlite_module(ModuleInitializationLevel p_level) {
+void initialize_mvsqlite_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		return;
 	}
@@ -41,5 +41,5 @@ void initialize_sqlite_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<SQLiteQuery>();
 }
 
-void uninitialize_sqlite_module(ModuleInitializationLevel p_level) {
+void uninitialize_mvsqlite_module(ModuleInitializationLevel p_level) {
 }
