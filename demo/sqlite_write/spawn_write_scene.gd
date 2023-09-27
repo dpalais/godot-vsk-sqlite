@@ -21,9 +21,10 @@ CREATE TABLE IF NOT EXISTS entity (
 	timestamp INTEGER NOT NULL
 ) WITHOUT ROWID, STRICT;
 """	
-	db.query(create_entity_table)
-	var truncate_entities : String = """DELETE FROM entity;"""
-	db.query(truncate_entities)
+	var query: MVSQLiteQuery = db.create_query(create_entity_table)
+	if query == null:
+		print("Failed to create query.")
+		return
 	for i in range(32):
 		var node_3d : Node3D = Node3D.new()
 		var script = load("res://sqlite_write/sqlite_write_scene.gd")

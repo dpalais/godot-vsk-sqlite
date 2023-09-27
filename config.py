@@ -1,16 +1,22 @@
 # config.py
 
+
 def can_build(env, platform):
-    return False
+    if platform == "ios" or platform == "web" or platform == "android":
+        return False
+    return True
+
 
 def configure(env):
     pass
 
+
 def get_doc_classes():
     return [
-        "SQLite",
-        "SQLiteQuery",
+        "MVSQLite",
+        "MVSQLiteQuery",
     ]
+
 
 def get_doc_path():
     return "doc_classes"

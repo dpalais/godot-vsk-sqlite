@@ -8,14 +8,11 @@
 
 config_version=5
 
-_global_script_classes=[]
-_global_script_class_icons={}
-
 [application]
 
 config/name="SQLiteTest"
 run/main_scene="res://sqlite_write/sqlite_write_scene.tscn"
-config/features=PackedStringArray("4.0")
+config/features=PackedStringArray("4.2", "Double Precision")
 config/icon="res://icon.png"
 
 [gdnative]

@@ -9,8 +9,8 @@ var open = false;
 
 
 func _ready():
-	# Create gdsqlite instance
-	db = SQLite.new()
+	# Create MVSQLite instance
+	db = MVSQLite.new()
 
 	# Open the database
 	if not db.open("user://player_stats.sqlite"):

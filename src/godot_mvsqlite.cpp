@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_sqlite.cpp                                                      */
+/*  godot_mvsqlite.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "../thirdparty/sqlite/sqlite3.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
 #include "core/error/error_macros.h"
 #include "core/os/os.h"
 #include "core/variant/variant.h"
-#include "thirdparty/sqlite/sqlite3.h"
 
-#include "godot_sqlite.h"
+#include "godot_mvsqlite.h"
 
 Array fast_parse_row(sqlite3_stmt *stmt) {
 	Array result;
@@ -146,12 +146,12 @@ void MVSQLiteQuery::finalize() {
 
 void MVSQLiteQuery::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_last_error_message"),
-			&SQLiteQuery::get_last_error_message);
-	ClassDB::bind_method(D_METHOD("execute", "arguments"), &SQLiteQuery::execute,
+			&MVSQLiteQuery::get_last_error_message);
+	ClassDB::bind_method(D_METHOD("execute", "arguments"), &MVSQLiteQuery::execute,
 			DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("batch_execute", "rows"),
-			&SQLiteQuery::batch_execute);
-	ClassDB::bind_method(D_METHOD("get_columns"), &SQLiteQuery::get_columns);
+			&MVSQLiteQuery::batch_execute);
+	ClassDB::bind_method(D_METHOD("get_columns"), &MVSQLiteQuery::get_columns);
 }
 
 MVSQLite::MVSQLite() {
@@ -169,7 +169,7 @@ void MVSQLite::close() {
 	// Reverse order because I need to remove the not available queries.
 	for (uint32_t i = queries.size(); i > 0; i -= 1) {
 		MVSQLiteQuery *query =
-				Object::cast_to<SQLiteQuery>(queries[i - 1]->get_ref());
+				Object::cast_to<MVSQLiteQuery>(queries[i - 1]->get_ref());
 		if (query != nullptr) {
 			query->finalize();
 		} else {
@@ -279,7 +279,7 @@ String MVSQLite::get_last_error_message() const {
 MVSQLite::~MVSQLite() {
 	close();
 	for (uint32_t i = 0; i < queries.size(); i += 1) {
-		SQLiteQuery *query = Object::cast_to<SQLiteQuery>(queries[i]->get_ref());
+		MVSQLiteQuery *query = Object::cast_to<MVSQLiteQuery>(queries[i]->get_ref());
 		if (query != nullptr) {
 			query->init(nullptr, "");
 		}
@@ -287,15 +287,15 @@ MVSQLite::~MVSQLite() {
 }
 
 void MVSQLite::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open"), &SQLite::open);
-	ClassDB::bind_method(D_METHOD("open_in_memory"), &SQLite::open_in_memory);
+	ClassDB::bind_method(D_METHOD("open", "path"), &MVSQLite::open);
+	ClassDB::bind_method(D_METHOD("open_in_memory"), &MVSQLite::open_in_memory);
 	ClassDB::bind_method(D_METHOD("open_buffered", "path", "buffers", "size"),
-			&SQLite::open_buffered);
+			&MVSQLite::open_buffered);
 
-	ClassDB::bind_method(D_METHOD("close"), &SQLite::close);
+	ClassDB::bind_method(D_METHOD("close"), &MVSQLite::close);
 
 	ClassDB::bind_method(D_METHOD("create_query", "statement"),
-			&SQLite::create_query);
+			&MVSQLite::create_query);
 }
 
 bool MVSQLite::open(const String &path) {
@@ -423,7 +423,7 @@ Variant MVSQLiteQuery::execute(const Array p_args) {
 
 	ERR_FAIL_NULL_V(stmt, Variant());
 
-	if (!SQLite::bind_args(stmt, p_args)) {
+	if (!MVSQLite::bind_args(stmt, p_args)) {
 		ERR_FAIL_V_MSG(Variant(),
 				"Error during arguments set: " + get_last_error_message());
 	}
@@ -452,7 +452,7 @@ Variant MVSQLiteQuery::batch_execute(Array p_rows) {
 	Array res;
 	for (int i = 0; i < p_rows.size(); i += 1) {
 		ERR_FAIL_COND_V_MSG(p_rows[i].get_type() != Variant::ARRAY, Variant(),
-				"An Array of Array is exepected.");
+				"An Array of Array is expected.");
 		Variant r = execute(p_rows[i]);
 		if (unlikely(r.get_type() == Variant::NIL)) {
 			// An error occurred, the error is already logged.
@@ -463,8 +463,8 @@ Variant MVSQLiteQuery::batch_execute(Array p_rows) {
 	return res;
 }
 
-Ref<SQLiteQuery> MVSQLite::create_query(String p_query) {
-	Ref<SQLiteQuery> query;
+Ref<MVSQLiteQuery> MVSQLite::create_query(String p_query) {
+	Ref<MVSQLiteQuery> query;
 	query.instantiate();
 	query->init(this, p_query);
 

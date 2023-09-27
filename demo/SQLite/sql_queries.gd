@@ -3,7 +3,7 @@ extends Node
 
 func _ready():
 	# Create gdsqlite instance
-	var db = SQLite.new()
+	var db = MVSQLite.new()
 
 	# Open database
 	if !db.open("user://godot.sqlite"):

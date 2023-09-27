@@ -1,24 +1,22 @@
-Import('env')
+Import("env")
 import os
+import subprocess
 
-# LIBPATH and LIBS need to be set on the real "env" (not the clone)
-# to link the specified libraries to the Godot executable.
+subprocess.run(["cargo", "build", "--release"], cwd="thirdparty/mvsqlite/mvsqlite")
 
-env.Append(CPPPATH=["."])
-env.Append(LIBPATH=['thirdparty/spmemvfs'])
-env.Append(LIBPATH=['thirdparty/sqlite'])
-env.Append(LIBPATH=['C:/Users/ernes/Downloads/epsilon/modules/mvsqlite/thirdparty/mvsqlite/target/release'])
-env.Append(LIBPATH=['C:/Users/ernes/scoop/apps/openssl-mingw/current/lib64'])
-env.Append(LIBS=['mvsqlite', 'ssl', 'crypto', 'ws2_32', 'bcrypt', 'userenv', 'ntdll'])
+env.Append(LIBPATH=["#modules/mvsqlite/thirdparty/mvsqlite/target/release"])
+env.Append(CPPPATH=["src", "#modules/mvsqlite/src", "#modules/mvsqlite"])
+env.Append(LIBPATH=["thirdparty/spmemvfs", "thirdparty/sqlite"])
+env.Prepend(LIBS=["mvsqlite"])
 
-module_env = env.Clone()
-module_env.Append(CPPDEFINES=[('SQLITE_ENABLE_RBU', 1)])
-module_env.Append(CPPDEFINES=[('SQLITE_USE_URI', 1)])
-module_env.Append(CPPDEFINES=["SQLITE_ENABLE_JSON1"])
-
-env_thirdparty = module_env.Clone()
+env_thirdparty = env.Clone()
 env_thirdparty.disable_warnings()
-env_thirdparty.add_source_files(env.modules_sources, "thirdparty/sqlite/*.c")
-env_thirdparty.add_source_files(env.modules_sources, "thirdparty/spmemvfs/*.c")
+env_thirdparty.Append(CPPDEFINES=[("SQLITE_ENABLE_RBU", 1)])
+env_thirdparty.Append(CPPDEFINES=[("SQLITE_USE_URI", 1)])
+env_thirdparty.Append(CPPDEFINES=["SQLITE_ENABLE_JSON1"])
 
-module_env.add_source_files(env.modules_sources, "*.cpp")
+env_thirdparty.add_source_files(env_thirdparty.modules_sources, "thirdparty/sqlite/*.c")
+env_thirdparty.add_source_files(env_thirdparty.modules_sources, "thirdparty/spmemvfs/*.c")
+
+env.add_source_files(env.modules_sources, "src/*.cpp")
+env.add_source_files(env.modules_sources, "*.cpp")

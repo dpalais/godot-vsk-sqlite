@@ -7,10 +7,10 @@ This is a [SQLite3](https://www.sqlite.org/) wrapper for the Godot Engine.
 1. Clone the repository using git:
 
    ```
-   git clone https://github.com/V-Sekai/godot-sqlite sqlite
+   git clone https://github.com/V-Sekai/V-Sekai.godot-mvsqlite.git mvsqlite
    ```
 
-2. Move the `sqlite` folder to the `modules` folder inside the Godot Engine source:
+2. Move the `mvsqlite` folder to the `modules` folder inside the Godot Engine source:
 
    ```
    mv sqlite godot/modules/

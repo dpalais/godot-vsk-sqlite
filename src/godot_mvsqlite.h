@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_sqlite.h                                                        */
+/*  godot_mvsqlite.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,17 +31,45 @@
 #ifndef GD_MVSQLITE_H
 #define GD_MVSQLITE_H
 
-#include "core/config/engine.h"
+#include "../thirdparty/spmemvfs/spmemvfs.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/local_vector.h"
+#include "modules/mvsqlite/thirdparty/spmemvfs/spmemvfs.h"
+#include "modules/mvsqlite/thirdparty/sqlite/sqlite3.h"
 
-#include "thirdparty/spmemvfs/spmemvfs.h"
-#include "thirdparty/sqlite/sqlite3.h"
+extern "C" {
+void init_mvsqlite(void);
+void init_mvsqlite_connection(sqlite3 *db);
+void mvsqlite_autocommit_backoff(sqlite3 *db);
+}
+
+typedef int (*sqlite3_initialize_fn)();
+typedef int (*sqlite3_open_v2_fn)(
+		const char *filename, /* Database filename (UTF-8) */
+		sqlite3 **ppDb, /* OUT: MVSQLite db handle */
+		int flags, /* Flags */
+		const char *zVfs /* Name of VFS module to use */
+);
+typedef int (*sqlite3_step_fn)(sqlite3_stmt *pStmt);
+
+int sqlite3_step(sqlite3_stmt *pStmt);
+
+int sqlite3_open_v2(
+		const char *filename, /* Database filename (UTF-8) */
+		sqlite3 **ppDb, /* OUT: MVSQLite db handle */
+		int flags, /* Flags */
+		const char *zVfs /* Name of VFS module to use */
+);
+
+int sqlite3_open(
+		const char *filename, /* Database filename (UTF-8) */
+		sqlite3 **ppDb /* OUT: MVSQLite db handle */
+);
 
 class MVSQLite;
 
 class MVSQLiteQuery : public RefCounted {
-	GDCLASS(SQLiteQuery, RefCounted);
+	GDCLASS(MVSQLiteQuery, RefCounted);
 
 	MVSQLite *db = nullptr;
 	sqlite3_stmt *stmt = nullptr;
@@ -66,9 +94,9 @@ private:
 };
 
 class MVSQLite : public RefCounted {
-	GDCLASS(SQLite, RefCounted);
+	GDCLASS(MVSQLite, RefCounted);
 
-	friend class SQLiteQuery;
+	friend MVSQLiteQuery;
 
 private:
 	sqlite3 *db = nullptr;
@@ -101,7 +129,7 @@ public:
 	bool open_buffered(const String &name, const PackedByteArray &buffers, int64_t size);
 	void close();
 
-	Ref<SQLiteQuery> create_query(String p_query);
+	Ref<MVSQLiteQuery> create_query(String p_query);
 
 	String get_last_error_message() const;
 };

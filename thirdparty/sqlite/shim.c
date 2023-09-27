@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <pthread.h>
 #include "sqlite3.h"
 #include <assert.h>
 
@@ -59,7 +58,11 @@ int sqlite3_open(
     return sqlite3_open_v2(filename, ppDb, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 }
 
-static __thread int in_sqlite3_step = 0;
+#ifdef _MSC_VER
+    static __declspec(thread) int in_sqlite3_step = 0;
+#else
+    static __thread int in_sqlite3_step = 0;
+#endif
 
 int sqlite3_step(sqlite3_stmt *pStmt) {
     int ret;

@@ -1,7 +1,7 @@
 extends Node
 
 @onready
-var db = SQLite.new();
+var db = MVSQLite.new();
 
 var db_path = "user://bytes_db.sqlite"
 
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS byte_data (
 
 var insert_data_query = """
 INSERT INTO byte_data VALUES (?, ?)
-"""  # ? are SQLite prepared statement substitutes
+"""  # ? are MVSQLite prepared statement substitutes
 
 var select_data_query = """
 SELECT dict FROM byte_data WHERE id=? LIMIT 1
