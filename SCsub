@@ -1,8 +1,21 @@
 Import("env")
 import os
 import subprocess
+import shutil
+import platform
 
 subprocess.run(["cargo", "build", "--release"], cwd="thirdparty/mvsqlite/mvsqlite")
+
+# Check the platform and copy the appropriate file
+if env["platform"] == 'windows':
+    if env["use_mingw"]:
+        shutil.copy("thirdparty/mvsqlite/target/release/mvsqlite.a", "mvsqlite.windows.template_release.x86_64.a")
+    else:
+        shutil.copy("thirdparty/mvsqlite/target/release/mvsqlite.lib", "mvsqlite.windows.template_release.x86_64.lib")
+elif env["platform"] == 'linux':
+    shutil.copy("thirdparty/mvsqlite/target/release/libmvsqlite.a", "mvsqlite.linux.template_release.x86_64.a")
+elif env["platform"] == 'macos':
+    shutil.copy("thirdparty/mvsqlite/target/release/libmvsqlite.a", "mvsqlite.macos.template_release.x86_64.a")
 
 env.Append(LIBPATH=["#modules/mvsqlite/thirdparty/mvsqlite/target/release"])
 env.Append(CPPPATH=["src", "#modules/mvsqlite/src", "#modules/mvsqlite"])
