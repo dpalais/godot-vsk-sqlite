@@ -10,7 +10,7 @@ if env["platform"] == "windows":
     if env["use_llvm"] or env["use_mingw"]:
         shutil.copy(
             "thirdparty/mvsqlite/target/release/mvsqlite.a",
-            "mvsqlite.windows." + env["target"] + "." + env["arch"] + ".a"
+            "mvsqlite.windows." + env["target"] + "." + env["arch"] + ".a",
         )
     else:
         shutil.copy(
