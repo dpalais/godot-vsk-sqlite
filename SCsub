@@ -6,16 +6,30 @@ import platform
 
 subprocess.run(["cargo", "build", "--release"], cwd="thirdparty/mvsqlite/mvsqlite")
 
-# Check the platform and copy the appropriate file
 if env["platform"] == "windows":
-    shutil.copy("thirdparty/mvsqlite/target/release/mvsqlite.lib", "mvsqlite.windows." + env["target"] + "." + env["arch"] + ".lib")
-    shutil.copy("thirdparty/mvsqlite/target/release/mvsqlite.a", "mvsqlite.windows." + env["target"] + "." + env["arch"] + ".a")
+    if env["use_llvm"] or env["use_mingw"]:
+        shutil.copy(
+            "thirdparty/mvsqlite/target/release/mvsqlite.a",
+            "mvsqlite.windows." + env["target"] + "." + env["arch"] + ".a"
+        )
+    else:
+        shutil.copy(
+            "thirdparty/mvsqlite/target/release/mvsqlite.lib",
+            "mvsqlite.windows." + env["target"] + "." + env["arch"] + ".lib",
+        )
 elif env["platform"] == "linux":
-    shutil.copy("thirdparty/mvsqlite/target/release/libmvsqlite.a", "mvsqlite.linux." + env["target"] + "." + env["arch"] + ".a")
+    shutil.copy(
+        "thirdparty/mvsqlite/target/release/libmvsqlite.a", "mvsqlite.linux." + env["target"] + "." + env["arch"] + ".a"
+    )
 elif env["platform"] == "macos":
-    shutil.copy("thirdparty/mvsqlite/target/release/libmvsqlite.a", "mvsqlite.macos." + env["target"] + "." + env["arch"] + ".a")
+    shutil.copy(
+        "thirdparty/mvsqlite/target/release/libmvsqlite.a", "mvsqlite.macos." + env["target"] + "." + env["arch"] + ".a"
+    )
 else:
-    shutil.copy("thirdparty/mvsqlite/target/release/libmvsqlite.a", "mvsqlite." + env["platform"] + "." + env["target"] + "." + env["arch"] + ".a")
+    shutil.copy(
+        "thirdparty/mvsqlite/target/release/libmvsqlite.a",
+        "mvsqlite." + env["platform"] + "." + env["target"] + "." + env["arch"] + ".a",
+    )
 
 env.Append(LIBPATH=["#modules/mvsqlite/thirdparty/mvsqlite/target/release"])
 env.Append(CPPPATH=["src", "#modules/mvsqlite/src", "#modules/mvsqlite"])
