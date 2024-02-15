@@ -8,12 +8,12 @@ func _ready() -> void:
 	if (!db.open("mvsqlite://test")):
 		print("Failed opening database.");
 		return;
-	var query: String = "SELECT 
+	var query: String = "SELECT
 				name
-			FROM 
+			FROM
 				sqlite_schema
-			WHERE 
-				type ='table' AND 
+			WHERE
+				type ='table' AND
 				name NOT LIKE 'sqlite_%';"
 	var result: Array = db.create_query(query).batch_execute([])
 	print(result)

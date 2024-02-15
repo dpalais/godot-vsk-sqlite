@@ -29,9 +29,9 @@ func _ready() -> void:
 	for pot in pots:
 		# Create new item from database
 		var item = {
-			"id": pot[query.get_columns().find("id")], 
-			"name": pot[query.get_columns().find("name")], 
-			"price": pot[query.get_columns().find("price")], 
+			"id": pot[query.get_columns().find("id")],
+			"name": pot[query.get_columns().find("name")],
+			"price": pot[query.get_columns().find("price")],
 			"heals": pot[query.get_columns().find("heals")]
 		}
 
