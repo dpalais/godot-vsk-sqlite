@@ -5,8 +5,8 @@
 ;
 [subrepo]
 	remote = https://github.com/V-Sekai/mvsqlite
-	branch = update-zstd
-	commit = 1675a2e9e226a4cf2353054f28d25e9a9607e8ac
-	parent = 13c560d3c9ff16f2a9d8b95f4efa55460a0539a0
+	branch = main
+	commit = de3848399d7ac5e3875b2e9e20b82b0c162e9e4f
+	parent = d3f7b9c2815f9c99f3c2172ce865cd5c571d3bbe
 	method = merge
 	cmdver = 0.4.6
