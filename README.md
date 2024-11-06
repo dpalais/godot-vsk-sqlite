@@ -1,26 +1,18 @@
-# Godot SQLite
+# Godot VSK SQLite
 
-This is a [SQLite](https://github.com/V-Sekai/mvsqlite) wrapper for the Godot Engine.
+This is a [SQLite](https://github.com/V-Sekai/godot-vsk-sqlite) wrapper for the Godot Engine.
 
 ## Installation
 
-1. Clone the repository using git:
+1. Clone the repository using git.
 
-   ```
-   git clone https://github.com/V-Sekai/V-Sekai.godot-mvsqlite.git mvsqlite
-   ```
+```
+git clone https://github.com/V-Sekai/godot-vsk-sqlite godot/modules/sqlite
+```
 
-2. Move the `mvsqlite` folder to the `modules` folder inside the Godot Engine source:
-
-   ```
-   mv sqlite godot/modules/
-   ```
-
-## Example Usage
-
-- [SQL Queries](https://github.com/V-Sekai/godot-sqlite/blob/master/demo/SQLite/sql_queries.gd)
-- [Game Highscore](https://github.com/V-Sekai/godot-sqlite/blob/master/demo/SQLite/game_highscore.gd)
-- [Item Libraries](https://github.com/V-Sekai/godot-sqlite/blob/master/demo/SQLite/item_database.gd)
+- [SQL Queries](https://github.com/V-Sekai/godot-vsk-sqlite/blob/master/demo/SQLite/sql_queries.gd)
+- [Game Highscore](https://github.com/V-Sekai/godot-vsk-sqlite/blob/master/demo/SQLite/game_highscore.gd)
+- [Item Libraries](https://github.com/V-Sekai/godot-vsk-sqlite/blob/master/demo/SQLite/item_database.gd)
 
 ## Credits
 
