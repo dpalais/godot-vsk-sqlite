@@ -5,7 +5,7 @@ func _ready() -> void:
 	var db: SQLite = SQLite.new();
 
 	# Open item database
-	if (!db.open("sqlite")):
+	if (!db.open("items.db")):
 		print("Failed opening database.");
 		return;
 	var query: String = "SELECT

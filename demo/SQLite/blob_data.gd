@@ -1,7 +1,7 @@
 extends Node
 
 @onready
-var db = SQLite.new();
+var db: SQLite = SQLite.new();
 
 var db_path = "user://bytes_db.sqlite"
 
@@ -31,13 +31,14 @@ func _ready():
 
 func load_db():
 	db.open(db_path);
-	var result = db.fetch_assoc_with_args(select_data_query, [0]);
+	var query: SQLiteQuery = db.create_query(select_data_query)
+	var result = query.execute([0])
 	if result:
-		var data = bytes_to_var(result[0]["dict"]);
+		var data = bytes_to_var(result[0]["dict"])
 		print("Byte data retrieved. Time of creation: %d:%d:%d" %
 			[data["time_created"]["hour"],
 			data["time_created"]["minute"],
-			data["time_created"]["second"]]);
+			data["time_created"]["second"]])
 	else:
 		print("Failed to retrieve byte data")
 
