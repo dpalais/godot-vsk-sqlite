@@ -1,5 +1,4 @@
 import subprocess
-import os
 
 
 def can_build(env, platform):
@@ -48,8 +47,8 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "MVSQLite",
-        "MVSQLiteQuery",
+        "SQLite",
+        "SQLiteQuery",
     ]
 
 

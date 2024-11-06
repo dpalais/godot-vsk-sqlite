@@ -1,7 +1,7 @@
 extends Node
 
 @onready
-var db = MVSQLite.new();
+var db = SQLite.new();
 
 var db_path = "user://bytes_db.sqlite"
 
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS byte_data (
 
 var insert_data_query = """
 INSERT INTO byte_data VALUES (?, ?)
-"""  # ? are MVSQLite prepared statement substitutes
+"""  # ? are SQLite prepared statement substitutes
 
 var select_data_query = """
 SELECT dict FROM byte_data WHERE id=? LIMIT 1
@@ -52,6 +52,6 @@ func create_db():
 		data["time_created"]["second"]]);
 	var bytes = var_to_bytes(data);
 	print(bytes.size());
-	var query: MVSQLiteQuery = db.create_query(create_table_query)
+	var query: SQLiteQuery = db.create_query(create_table_query)
 	query.execute([])
 	db.close();

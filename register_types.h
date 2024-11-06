@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MVSQLITE_REGISTER_TYPES_H
-#define MVSQLITE_REGISTER_TYPES_H
+#ifndef SQLITE_REGISTER_TYPES_H
+#define SQLITE_REGISTER_TYPES_H
 
 #include "modules/register_module_types.h"
 
-void initialize_mvsqlite_module(ModuleInitializationLevel p_level);
-void uninitialize_mvsqlite_module(ModuleInitializationLevel p_level);
+void initialize_sqlite_module(ModuleInitializationLevel p_level);
+void uninitialize_sqlite_module(ModuleInitializationLevel p_level);
 
-#endif // MVSQLITE_REGISTER_TYPES_H
+#endif // SQLITE_REGISTER_TYPES_H

@@ -31,17 +31,17 @@
 #include "register_types.h"
 
 #include "core/object/class_db.h"
-#include "src/godot_mvsqlite.h"
+#include "src/godot_sqlite.h"
 
-void initialize_mvsqlite_module(ModuleInitializationLevel p_level) {
+void initialize_sqlite_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		return;
 	}
-	ClassDB::register_class<MVSQLite>();
-	ClassDB::register_class<MVSQLiteQuery>();
+	ClassDB::register_class<SQLite>();
+	ClassDB::register_class<SQLiteQuery>();
 }
 
-void uninitialize_mvsqlite_module(ModuleInitializationLevel p_level) {
+void uninitialize_sqlite_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		return;
 	}

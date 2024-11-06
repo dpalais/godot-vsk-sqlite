@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include "modules/mvsqlite/thirdparty/sqlite/sqlite3.h"
+#include "sqlite/sqlite3.h"
 
 #define SPMEMVFS_NAME "spmemvfs"
 

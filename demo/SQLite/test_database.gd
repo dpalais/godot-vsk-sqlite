@@ -2,10 +2,10 @@ extends Node
 
 func _ready() -> void:
 	# Create new gdsqlite instance
-	var db: MVSQLite = MVSQLite.new();
+	var db: SQLite = SQLite.new();
 
 	# Open item database
-	if (!db.open("mvsqlite")):
+	if (!db.open("sqlite")):
 		print("Failed opening database.");
 		return;
 	var query: String = "SELECT

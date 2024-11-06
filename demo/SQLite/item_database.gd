@@ -1,21 +1,21 @@
 extends Node
 
-# MVSQLite module
+# SQLite module
 # Variables
 var item_list = []
 
 func _ready() -> void:
 	# Create new gdsqlite instance
-	var db = MVSQLite.new()
+	var db = SQLite.new()
 
 	# Open item database
 	if !open_database(db, "res://items.db"):
 		print("Failed opening database.")
 		return
-		
+
 
 	# Create a new query
-	var query: MVSQLiteQuery = db.create_query("SELECT * FROM potion ORDER BY id ASC")
+	var query: SQLiteQuery = db.create_query("SELECT * FROM potion ORDER BY id ASC")
 
 	# Get item list from db
 	var pots = query.execute()
@@ -39,7 +39,7 @@ func _ready() -> void:
 		print("Item ", i.id, " (", i.name, ") $", i.price, " +", i.heals, "hp")
 
 
-func open_database(db: MVSQLite, path: String) -> bool:
+func open_database(db: SQLite, path: String) -> bool:
 	if path.begins_with("res://"):
 		# Open packed database
 		var file = FileAccess.open(path, FileAccess.READ)

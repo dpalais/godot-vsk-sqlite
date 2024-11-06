@@ -9,16 +9,16 @@ var open = false;
 
 
 func _ready():
-	# Create MVSQLite instance
-	db = MVSQLite.new()
+	# Create SQLite instance
+	db = SQLite.new()
 
 	# Open the database
 	if not db.open("user://player_stats.sqlite"):
 		return
 
 	open = true
-	var query: MVSQLiteQuery = db.create_query("CREATE TABLE IF NOT EXISTS highscore (id INTEGER PRIMARY KEY, score INTEGER NOT NULL);")
-	
+	var query: SQLiteQuery = db.create_query("CREATE TABLE IF NOT EXISTS highscore (id INTEGER PRIMARY KEY, score INTEGER NOT NULL);")
+
 	# Create table
 	if not query.execute([]).is_empty():
 		return
@@ -62,7 +62,7 @@ func set_highscore(score):
 func get_highscore():
 	if not open:
 		return
-	var query: MVSQLiteQuery = db.create_query("SELECT score FROM highscore WHERE id=? LIMIT 1;");
+	var query: SQLiteQuery = db.create_query("SELECT score FROM highscore WHERE id=? LIMIT 1;");
 	# Retrieve highscore from database
 	var rows = query.execute([row_id])
 	if (rows and not rows.is_empty()):
