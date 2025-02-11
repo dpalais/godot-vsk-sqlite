@@ -47,7 +47,7 @@ Array fast_parse_row(sqlite3_stmt *stmt) {
 		Variant value;
 		switch (column_type) {
 			case SQLITE_INTEGER:
-				value = Variant(sqlite3_column_int(stmt, i));
+				value = Variant((int64_t)sqlite3_column_int64(stmt, i));
 				break;
 
 			case SQLITE_FLOAT:
@@ -354,8 +354,10 @@ bool SQLite::bind_args(sqlite3_stmt *stmt, const Array &args) {
 				retcode = sqlite3_bind_null(stmt, i + 1);
 				break;
 			case Variant::Type::BOOL:
-			case Variant::Type::INT:
 				retcode = sqlite3_bind_int(stmt, i + 1, (int)args[i]);
+				break;
+			case Variant::Type::INT:
+				retcode = sqlite3_bind_int64(stmt, i + 1, (int64_t)args[i]);
 				break;
 			case Variant::Type::FLOAT:
 				retcode = sqlite3_bind_double(stmt, i + 1, (double)args[i]);
